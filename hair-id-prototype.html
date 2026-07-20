@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hair ID — Clickable Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <!-- ================= demo side panel ================= -->
+  <aside class="side">
+    <h1>Hair <span class="id">ID</span><br>Prototype</h1>
+    <p class="sub">A clickable prototype of our converged solution: one app that carries a client's precise haircut spec between chairs — and lets both sides see the cut before it happens.</p>
+
+    <div class="merge-map">
+      <div class="mm-title">Merged from two concepts</div>
+      <div class="mm-row mm-c1"><span class="mm-dot"></span>Concept 1 · Hair Profile Record (spec + history + QR)</div>
+      <div class="mm-row mm-ar"><span class="mm-dot"></span>Augmented Photo Preview (visual try-on + confidence)</div>
+      <div class="mm-flow">Build profile → Preview new style → Lock &amp; share QR → Barber reads spec + rates confidence → 360° update after the cut</div>
+    </div>
+
+    <div class="role-switch" role="tablist" aria-label="Choose role">
+      <button id="roleClient" class="active" onclick="setRole('client')">Client · Ravi</button>
+      <button id="roleBarber" onclick="setRole('barber')">Barber</button>
+    </div>
+
+    <div class="script">
+      <div class="step"><span class="n">1</span><span><b>Client:</b> open profile, try a new style, adjust length &amp; fade, lock it, show QR.</span></div>
+      <div class="step"><span class="n">2</span><span><b>Barber:</b> scan QR → full spec, dye alert, target preview → rate confidence → suggest adjustment if unsure.</span></div>
+      <div class="step"><span class="n">3</span><span><b>After the cut:</b> record 360° to update the profile — ready for any future barber.</span></div>
+    </div>
+  </aside>
+
+  <!-- ================= phone ================= -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"></div>
+
+      <div class="screens">
+
+        <!-- ============ CLIENT · HOME ============ -->
+        <section class="screen on" id="sc-home">
+          <div class="apphead"><div class="logo">Hair<span>ID</span></div><div class="who">Client · Ravi</div></div>
+
+          <div class="hero">
+            <div class="name">My Haircut</div>
+            <div class="cutname">Wolf cut · last updated Oct 25</div>
+            <div class="heromain">
+              <div class="headbox" id="heroHead"></div>
+              <div class="stats">
+                <div class="stat"><span>Fade length</span><b>0.5 mm</b></div>
+                <div class="stat"><span>Sides</span><b>Low fade · #2</b></div>
+                <div class="stat"><span>Back</span><b>Taper</b></div>
+                <div class="stat"><span>Visits</span><b>6</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">Saved views</div>
+            <div class="views" id="homeViews"></div>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">Barber notes</div>
+            <p class="muted">Keep top textured, natural neckline. Client prefers this length — avoid taking sides above the temple.</p>
+          </div>
+
+          <button class="btn primary" onclick="go('sc-styles')">Try a new style</button>
+          <div style="height:10px"></div>
+          <button class="btn ghost" onclick="go('sc-share')">Share my Hair ID</button>
+        </section>
+
+        <!-- ============ CLIENT · STYLE PICKER ============ -->
+        <section class="screen" id="sc-styles">
+          <div class="backline"><button onclick="go('sc-home')">‹ Back</button><span class="title">Pick a style to preview</span></div>
+          <p class="muted" style="margin-bottom:12px">The preview maps the style onto your saved head profile — not a stock photo.</p>
+          <div class="seg" id="catSeg" style="margin-bottom:12px">
+            <button class="active" data-v="men" onclick="setCat(this)">Men's</button>
+            <button data-v="women" onclick="setCat(this)">Women's</button>
+          </div>
+          <div class="stylegrid" id="styleGrid"></div>
+          <div style="height:14px"></div>
+          <button class="btn primary" onclick="go('sc-preview')">Preview on my profile</button>
+        </section>
+
+        <!-- ============ CLIENT · PREVIEW (AR concept, simulated) ============ -->
+        <section class="screen" id="sc-preview">
+          <div class="backline"><button onclick="go('sc-styles')">‹ Styles</button><span class="title">Preview &amp; adjust</span></div>
+
+          <div class="previewbox">
+            <div id="previewFace"></div>
+            <div class="pv-label" id="pvLabel">Textured crop · top 6 cm · low fade · guard #2</div>
+          </div>
+
+          <div class="card">
+            <div class="slider-row">
+              <label><span id="topLabel">Top length</span> <output id="topOut">6 cm</output></label>
+              <input type="range" id="topLen" min="2" max="10" value="6" step="1" oninput="updatePreview()">
+            </div>
+            <div class="slider-row" id="fadeRow">
+              <label>Fade height</label>
+              <div class="seg" id="fadeSeg">
+                <button class="active" data-v="low" onclick="setFade(this)">Low</button>
+                <button data-v="mid" onclick="setFade(this)">Mid</button>
+                <button data-v="high" onclick="setFade(this)">High</button>
+              </div>
+            </div>
+            <div class="slider-row" id="guardWrap" style="margin-bottom:2px">
+              <label>Clipper guard (sides)</label>
+              <div class="guards" id="guardRow">
+                <button data-v="0.5" onclick="setGuard(this)">#0.5<small>1.5 mm</small></button>
+                <button data-v="1" onclick="setGuard(this)">#1<small>3 mm</small></button>
+                <button class="active" data-v="2" onclick="setGuard(this)">#2<small>6 mm</small></button>
+                <button data-v="3" onclick="setGuard(this)">#3<small>10 mm</small></button>
+                <button data-v="4" onclick="setGuard(this)">#4<small>13 mm</small></button>
+              </div>
+            </div>
+            <div class="slider-row" id="layersRow" style="display:none;margin-bottom:2px">
+              <label>Layering</label>
+              <div class="seg" id="layerSeg">
+                <button class="active" data-v="soft" onclick="setLayers(this)">Soft</button>
+                <button data-v="medium" onclick="setLayers(this)">Medium</button>
+                <button data-v="choppy" onclick="setLayers(this)">Choppy</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn primary" onclick="lockLook()">Lock this look &amp; share</button>
+        </section>
+
+        <!-- ============ CLIENT · SHARE / QR ============ -->
+        <section class="screen" id="sc-share">
+          <div class="backline"><button onclick="go('sc-home')">‹ Home</button><span class="title">Share with your barber</span></div>
+
+          <div class="qrbox">
+            <div id="qrHolder"></div>
+            <div class="linkpill">hairid.app/r/ravi-2049 · Copy link</div>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">What the barber will see</div>
+            <div class="chips" id="shareChips"></div>
+          </div>
+
+          <div class="alert">
+            <div class="ic">!</div>
+            <p><b>Dye history travels with the spec</b>Dark blue dye on Oct 10 — flagged automatically so any new barber sees it.</p>
+          </div>
+
+          <button class="btn ghost" onclick="setRole('barber');toast('Switched to barber view — scan the code')">Hand the phone to the barber →</button>
+        </section>
+
+        <!-- ============ CLIENT · HISTORY ============ -->
+        <section class="screen" id="sc-history">
+          <div class="apphead"><div class="logo">Hair<span>ID</span></div><div class="who">History</div></div>
+
+          <div class="tl-item" id="newEntry" style="display:none">
+            <div class="tl-rail"><div class="tl-dot"></div><div class="tl-line"></div></div>
+            <div class="tl-card">
+              <div class="tl-date">Today</div>
+              <h4>Textured crop · 360° scan saved</h4>
+              <p class="muted">Recorded by barber. Front / side / back captured. Spec updated to match the finished cut.</p>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-rail"><div class="tl-dot"></div><div class="tl-line"></div></div>
+            <div class="tl-card">
+              <div class="tl-date">Oct 25</div>
+              <h4>Haircut · Wolf cut</h4>
+              <p class="muted">L / R / B / F photos saved. Comment: customer prefers this length. Keep top textured.</p>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-rail"><div class="tl-dot dye"></div><div class="tl-line"></div></div>
+            <div class="tl-card">
+              <div class="tl-date">Oct 10</div>
+              <h4>Dye · Dark blue</h4>
+              <p class="muted">Note: possible stiff hair. Auto-flagged for future colour services.</p>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-rail"><div class="tl-dot"></div></div>
+            <div class="tl-card">
+              <div class="tl-date">Sep 12</div>
+              <h4>Haircut · Low fade</h4>
+              <p class="muted">Guard #1 sides, taper back, natural line.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ BARBER · SCAN ============ -->
+        <section class="screen" id="sc-scan">
+          <div class="apphead"><div class="logo">Hair<span>ID</span></div><div class="who">Barber</div></div>
+
+          <div class="scanframe">
+            <div class="scan-target"><i></i><div class="scanline"></div></div>
+          </div>
+          <p class="muted" style="text-align:center;margin-bottom:14px">Point the camera at the client's Hair ID code.<br>No account needed — the spec opens instantly.</p>
+          <button class="btn primary" onclick="go('sc-spec');toast('Ravi\'s Hair ID loaded')">Simulate scan · load Ravi's code</button>
+        </section>
+
+        <!-- ============ BARBER · CLIENT SPEC ============ -->
+        <section class="screen" id="sc-spec">
+          <div class="backline"><button onclick="go('sc-scan')">‹ Scan</button><span class="title">Ravi · requested look</span></div>
+
+          <div class="alert red">
+            <div class="ic">!</div>
+            <p><b>Dye alert · Oct 10</b>Dark blue dye — possible stiff hair. Check condition before any colour work.</p>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">Target preview · locked by client</div>
+            <div style="text-align:center"><div id="barberFace"></div></div>
+            <div class="pv-label" id="barberLabel" style="text-align:center"></div>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">Spec sheet</div>
+            <div class="chips" id="specChips"></div>
+          </div>
+
+          <div class="card">
+            <div class="eyebrow">Reference views</div>
+            <div class="views" id="barberViews"></div>
+          </div>
+
+          <div class="card">
+            <h3>Can you replicate this?</h3>
+            <div class="conf">
+              <button class="hi" onclick="setConf(this,'hi')">High<small>Cut as specced</small></button>
+              <button class="md" onclick="setConf(this,'md')">Medium<small>Small tweak</small></button>
+              <button class="lo" onclick="setConf(this,'lo')">Low<small>Needs a rethink</small></button>
+            </div>
+            <div id="adjustCard" style="margin-top:12px">
+              <div class="alert" style="margin-bottom:10px">
+                <div class="ic">↺</div>
+                <p><b>Suggest an adjustment</b><span id="adjustText">Hair density at the crown won't hold 6 cm textured — suggest 5 cm and mid fade instead.</span></p>
+              </div>
+              <button class="btn warn" onclick="toast('Adjusted preview sent to Ravi ✓')">Send adjusted preview to client</button>
+            </div>
+          </div>
+
+          <button class="btn primary" onclick="go('sc-update')">Cut done → update profile</button>
+        </section>
+
+        <!-- ============ BARBER · 360 UPDATE ============ -->
+        <section class="screen" id="sc-update">
+          <div class="backline"><button onclick="go('sc-spec')">‹ Spec</button><span class="title">Update Ravi's Hair ID</span></div>
+
+          <div class="card">
+            <div class="ringwrap" id="ringwrap">
+              <div class="ring">
+                <svg viewBox="0 0 120 120" width="170" height="170" aria-hidden="true">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#E2ECEA" stroke-width="10"/>
+                  <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="#159A92" stroke-width="10"
+                          stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+                </svg>
+                <div class="pct"><span id="pctNum">0%</span><small id="pctLabel">Ready</small></div>
+              </div>
+              <p class="muted" style="text-align:center;margin-top:10px">Walk slowly around the chair.<br>Front · sides · back are captured automatically.</p>
+            </div>
+            <div class="success" id="scanDone">
+              <div class="ok">✓</div>
+              <h3>Profile updated</h3>
+              <p class="muted">Textured crop · 360° views saved.<br>Every future barber can recreate this cut with minimal explanation.</p>
+            </div>
+          </div>
+
+          <button class="btn primary" id="recBtn" onclick="record360()">Record 360° scan</button>
+          <div style="height:10px"></div>
+          <button class="btn ghost" id="finishBtn" style="display:none" onclick="finishVisit()">Finish — show client's updated history</button>
+        </section>
+
+      </div><!-- /screens -->
+
+      <div class="toast" id="toast"></div>
+
+      <!-- bottom nav -->
+      <nav class="nav" id="navClient">
+        <button class="active" data-s="sc-home" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
+          Hair ID</button>
+        <button data-s="sc-preview" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg>
+          Preview</button>
+        <button data-s="sc-share" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+          Share</button>
+        <button data-s="sc-history" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          History</button>
+      </nav>
+      <nav class="nav" id="navBarber" style="display:none">
+        <button class="active" data-s="sc-scan" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M4 12h16"/></svg>
+          Scan</button>
+        <button data-s="sc-spec" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          Client spec</button>
+        <button data-s="sc-update" onclick="nav(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A5B59" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
+          360° update</button>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= state ================= */
+const state = {
+  role:'client',
+  cat:'men',
+  style:'crop',
+  topLen:6,
+  fade:'low',
+  guard:'2',
+  layers:'soft',
+  locked:false
+};
+
+const STYLES = [
+  {id:'crop',   name:'Textured crop', sub:'Short + choppy top', cat:'men'},
+  {id:'wolf',   name:'Wolf cut',      sub:'Current style',      cat:'men'},
+  {id:'fade',   name:'Skin fade',     sub:'Tight sides',        cat:'men'},
+  {id:'curtain',name:'Curtain',       sub:'Middle part',        cat:'men'},
+  {id:'pixie',  name:'Pixie',         sub:'Cropped + wispy',    cat:'women'},
+  {id:'bob',    name:'Chin bob',      sub:'Blunt or layered',   cat:'women', long:true, def:20},
+  {id:'longlayers', name:'Long layers', sub:'Past the shoulders', cat:'women', long:true, def:34},
+  {id:'bangs',  name:'Curtain bangs', sub:'Bangs + length',     cat:'women', long:true, def:32},
+];
+const styleDef = id => STYLES.find(s=>s.id===id);
+
+/* ================= SVG head builders ================= */
+/* front-facing face with parametric hair.
+   Short styles: topLen = cm on top, fade height + clipper guard on the sides.
+   Long styles:  topLen = overall length in cm, layers = hem texture. */
+function faceSVG({style, topLen, fade, guard, layers='soft', size=200}){
+  const def = styleDef(style);
+  const isLong = !!(def && def.long);
+  const HAIR = '#22302E';
+
+  /* ---------- long styles (women's, length-based) ---------- */
+  let backHair='', frontHair='', topCap='';
+  if(isLong){
+    // 15–45 cm → hem y 150 (chin) … 228 (past shoulders)
+    const hemY = 150 + (Math.min(45,Math.max(15,topLen))-15) * (228-150)/30;
+    // hem edge encodes layering
+    const hem =
+      layers==='choppy' ? `L132 ${hemY+12} L116 ${hemY} L100 ${hemY+16} L84 ${hemY} L68 ${hemY+12} L52 ${hemY-6}` :
+      layers==='medium' ? `Q124 ${hemY+10} 100 ${hemY+16} Q76 ${hemY+10} 52 ${hemY-6}` :
+                          `Q100 ${hemY+18} 52 ${hemY-6}`;
+    backHair = `<path d="M52 62 Q46 28 100 24 Q154 28 148 62 L148 ${hemY-6} ${hem} Z" fill="${HAIR}"/>`;
+    // face-framing strands, drawn in front of the face
+    const fr = Math.min(hemY-8, 210);
+    frontHair = `
+      <path d="M58 60 Q46 104 50 ${fr} L68 ${fr-8} Q58 118 68 68 Z" fill="${HAIR}"/>
+      <path d="M142 60 Q154 104 150 ${fr} L132 ${fr-8} Q142 118 132 68 Z" fill="${HAIR}"/>`;
+    if(style==='bangs'){
+      topCap = `<path d="M58 72 Q54 32 100 28 Q146 32 142 72 Q138 46 100 42 Q62 46 58 72 Z" fill="${HAIR}"/>
+        <path d="M80 45 Q66 56 62 80 L74 82 Q78 62 90 49 Z" fill="${HAIR}"/>
+        <path d="M120 45 Q134 56 138 80 L126 82 Q122 62 110 49 Z" fill="${HAIR}"/>`;
+    }else{
+      // centre part (bob, long layers)
+      topCap = `<path d="M56 76 Q52 32 100 28 Q148 32 144 76 Q140 48 103 44 L100 62 L97 44 Q60 48 56 76 Z" fill="${HAIR}"/>`;
+    }
+  }
+
+  /* ---------- short styles (length + fade + guard) ---------- */
+  let topHair='', sideBands='';
+  if(!isLong){
+    const s = .45 + (Math.min(10,Math.max(2,topLen))-2) * (1.15-.45)/8;
+    const fadeY = fade==='low' ? 96 : fade==='mid' ? 82 : 68;
+    const guardOpacity = {'0.5':.18,'1':.3,'2':.45,'3':.6,'4':.75}[guard] ?? .45;
+
+    if(style==='crop'){
+      topHair = `<path d="M55 62 Q60 30 100 28 Q140 30 145 62 L142 70 Q133 52 100 50 Q67 52 58 70 Z" fill="${HAIR}"/>
+        <path d="M62 55 l6 -12 M76 48 l4 -13 M92 45 l2 -13 M108 45 l-2 -13 M124 48 l-4 -13 M138 55 l-6 -12"
+          stroke="${HAIR}" stroke-width="5" stroke-linecap="round"/>`;
+    }else if(style==='wolf'){
+      topHair = `<path d="M50 70 Q52 26 100 24 Q148 26 150 70 Q152 92 146 104 L138 96 Q142 66 126 52 L120 66 L112 48 L100 62 L88 48 L80 66 L74 52 Q58 66 62 96 L54 104 Q48 92 50 70 Z" fill="${HAIR}"/>`;
+    }else if(style==='fade'){
+      topHair = `<path d="M58 62 Q62 34 100 32 Q138 34 142 62 L140 68 Q130 52 100 50 Q70 52 60 68 Z" fill="${HAIR}"/>`;
+    }else if(style==='pixie'){
+      topHair = `<path d="M54 64 Q56 28 100 25 Q144 28 146 64 L143 76 Q136 48 100 45 Q64 48 57 76 Z" fill="${HAIR}"/>
+        <path d="M58 74 q-6 12 -2 22 M142 74 q6 12 2 22" stroke="${HAIR}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+    }else{ // curtain
+      topHair = `<path d="M54 66 Q56 28 100 26 Q144 28 146 66 L143 84 Q140 56 104 50 L100 78 L96 50 Q60 56 57 84 Z" fill="${HAIR}"/>`;
+    }
+    sideBands = `
+      <path d="M56 ${fadeY} Q56 60 70 48 L70 118 Q60 112 56 ${fadeY+8} Z" fill="${HAIR}" opacity="${guardOpacity}"/>
+      <path d="M144 ${fadeY} Q144 60 130 48 L130 118 Q140 112 144 ${fadeY+8} Z" fill="${HAIR}" opacity="${guardOpacity}"/>
+      <g transform="translate(100 62) scale(1 ${s.toFixed(2)}) translate(-100 -62)">${topHair}</g>`;
+  }
+
+  return `<svg viewBox="0 0 200 236" width="${size}" role="img" aria-label="Style preview">
+    <ellipse cx="100" cy="222" rx="48" ry="11" fill="#DCEBE8"/>
+    ${backHair}
+    <path d="M78 148 Q100 162 122 148 L122 176 Q100 190 78 176 Z" fill="#E9C29B"/>
+    <path d="M62 176 Q100 168 138 176 L142 212 L58 212 Z" fill="#CFE5E1"/>
+    <path d="M60 92 q-10 2 -8 14 q2 10 12 10 M140 92 q10 2 8 14 q-2 10 -12 10" fill="#F2CFA6"/>
+    <ellipse cx="100" cy="98" rx="44" ry="52" fill="#F2CFA6"/>
+    ${sideBands}
+    ${topCap}
+    <circle cx="84" cy="100" r="4" fill="#122120"/>
+    <circle cx="116" cy="100" r="4" fill="#122120"/>
+    <path d="M92 124 Q100 130 108 124" stroke="#B77E4B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M96 108 q4 6 0 8" stroke="#DBA875" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    ${frontHair}
+  </svg>`;
+}
+
+/* small side-view head used in thumbnails / hero */
+function sideSVG(label){
+  const flip = label==='R' ? 'transform="translate(100 0) scale(-1 1)"' : '';
+  const back = label==='B';
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${label} view">
+    <g ${flip}>
+    ${back
+      ? `<ellipse cx="50" cy="50" rx="26" ry="30" fill="#F2CFA6"/>
+         <path d="M24 52 Q22 18 50 16 Q78 18 76 52 Q76 72 66 80 L34 80 Q24 72 24 52Z" fill="#22302E"/>
+         <path d="M34 80 Q50 86 66 80 L62 92 Q50 96 38 92 Z" fill="#22302E" opacity=".55"/>`
+      : `<path d="M30 58 Q28 24 56 20 Q80 18 80 44 Q80 58 72 66 L74 78 L58 82 Q40 84 34 72 Q30 66 30 58Z" fill="#F2CFA6"/>
+         <path d="M28 46 Q30 16 60 16 Q84 18 82 40 Q70 30 52 32 Q36 34 32 52 Q30 58 30 62 Q26 54 28 46Z" fill="#22302E"/>
+         <circle cx="68" cy="48" r="2.6" fill="#122120"/>`}
+    </g>
+  </svg>`;
+}
+
+/* fake QR */
+function qrSVG(){
+  const n=21, cell=8, pad=8;
+  let cells='';
+  // deterministic pseudo-random
+  let seed=42;
+  const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648};
+  const finder=(x,y)=>`
+    <rect x="${x}" y="${y}" width="${cell*7}" height="${cell*7}" fill="#122120"/>
+    <rect x="${x+cell}" y="${y+cell}" width="${cell*5}" height="${cell*5}" fill="#fff"/>
+    <rect x="${x+cell*2}" y="${y+cell*2}" width="${cell*3}" height="${cell*3}" fill="#122120"/>`;
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+    const inFinder=(r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);
+    if(!inFinder && rnd()>.52) cells+=`<rect x="${pad+c*cell}" y="${pad+r*cell}" width="${cell}" height="${cell}" fill="#122120"/>`;
+  }
+  const sz=pad*2+n*cell;
+  return `<svg viewBox="0 0 ${sz} ${sz}" role="img" aria-label="Hair ID QR code">
+    <rect width="${sz}" height="${sz}" fill="#fff" rx="12"/>
+    ${cells}
+    ${finder(pad,pad)}${finder(pad+(n-7)*cell,pad)}${finder(pad,pad+(n-7)*cell)}
+  </svg>`;
+}
+
+/* ================= render helpers ================= */
+function styleName(){return styleDef(state.style).name}
+function isLongStyle(){return !!styleDef(state.style).long}
+function specText(){
+  if(isLongStyle())
+    return `${styleName()} · length ${state.topLen} cm · ${state.layers} layers`;
+  return `${styleName()} · top ${state.topLen} cm · ${state.fade} fade · guard #${state.guard}`;
+}
+function specChipsHTML(){
+  if(isLongStyle()) return `
+    <div class="chip">${styleName()}<small>Style</small></div>
+    <div class="chip">${state.topLen} cm<small>Length</small></div>
+    <div class="chip">${state.layers}<small>Layers</small></div>
+    <div class="chip">Face-framing<small>Front</small></div>
+    <div class="chip">Blunt hem<small>Ends</small></div>
+    <div class="chip amber">Check dye condition<small>Note</small></div>`;
+  return `
+    <div class="chip">${styleName()}<small>Style</small></div>
+    <div class="chip">${state.topLen} cm<small>Top length</small></div>
+    <div class="chip">${state.fade} fade<small>Sides</small></div>
+    <div class="chip">#${state.guard}<small>Guard</small></div>
+    <div class="chip">Taper<small>Back</small></div>
+    <div class="chip amber">Keep top textured<small>Note</small></div>`;
+}
+function renderViews(el){
+  el.innerHTML = ['F','L','R','B'].map(v=>`<div class="view">${sideSVG(v)}<b>${v}</b></div>`).join('');
+}
+function updatePreview(){
+  state.topLen = +document.getElementById('topLen').value;
+  document.getElementById('topOut').textContent = state.topLen+' cm';
+  const svg = faceSVG(state);
+  document.getElementById('previewFace').innerHTML = svg;
+  document.getElementById('pvLabel').textContent = specText();
+}
+function renderBarber(){
+  document.getElementById('barberFace').innerHTML = faceSVG({...state,size:150});
+  document.getElementById('barberLabel').textContent = specText();
+  document.getElementById('specChips').innerHTML = specChipsHTML();
+  document.getElementById('adjustText').textContent = isLongStyle()
+    ? `Dyed ends may look uneven at ${state.topLen} cm — suggest ${Math.max(15,state.topLen-3)} cm with ${state.layers==='soft'?'medium':state.layers} layers to remove damage.`
+    : `Hair density at the crown won't hold ${state.topLen} cm textured — suggest ${Math.max(2,state.topLen-1)} cm and mid fade instead.`;
+}
+
+/* ================= navigation ================= */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  // sync nav highlight
+  const nav = state.role==='client' ? '#navClient' : '#navBarber';
+  document.querySelectorAll(nav+' button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.s===id);
+  });
+  if(id==='sc-spec') renderBarber();
+  if(id==='sc-preview') updatePreview();
+}
+function nav(btn){ go(btn.dataset.s); }
+
+function setRole(r){
+  state.role=r;
+  document.getElementById('roleClient').classList.toggle('active',r==='client');
+  document.getElementById('roleBarber').classList.toggle('active',r==='barber');
+  document.getElementById('navClient').style.display = r==='client'?'flex':'none';
+  document.getElementById('navBarber').style.display = r==='barber'?'flex':'none';
+  go(r==='client'?'sc-home':'sc-scan');
+}
+
+/* ================= interactions ================= */
+function setFade(btn){
+  document.querySelectorAll('#fadeSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.fade = btn.dataset.v;
+  updatePreview();
+}
+function setGuard(btn){
+  document.querySelectorAll('#guardRow button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.guard = btn.dataset.v;
+  updatePreview();
+}
+function setLayers(btn){
+  document.querySelectorAll('#layerSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.layers = btn.dataset.v;
+  updatePreview();
+}
+function setCat(btn){
+  document.querySelectorAll('#catSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.cat = btn.dataset.v;
+  // pick the first style of the new category
+  state.style = STYLES.find(s=>s.cat===state.cat).id;
+  renderGrid();
+  applyStyleControls();
+}
+function renderGrid(){
+  document.getElementById('styleGrid').innerHTML = STYLES
+    .filter(s=>s.cat===state.cat)
+    .map(s=>`
+      <button class="stylecard ${s.id===state.style?'sel':''}" onclick="selectStyle('${s.id}',this)">
+        ${faceSVG({style:s.id, topLen:s.long?s.def:6, fade:'low', guard:'2', layers:'soft', size:64})}
+        <b>${s.name}</b><span>${s.sub}</span>
+      </button>`).join('');
+}
+/* switch the control panel between short-cut and long-style parameters */
+function applyStyleControls(){
+  const def = styleDef(state.style), long = !!def.long;
+  const tl = document.getElementById('topLen');
+  if(long){
+    tl.min=15; tl.max=45; tl.step=1;
+    state.topLen = def.def; tl.value = state.topLen;
+    document.getElementById('topLabel').textContent = 'Length';
+  }else{
+    tl.min=2; tl.max=10; tl.step=1;
+    state.topLen = 6; tl.value = 6;
+    document.getElementById('topLabel').textContent = 'Top length';
+  }
+  document.getElementById('fadeRow').style.display   = long?'none':'block';
+  document.getElementById('guardWrap').style.display = long?'none':'block';
+  document.getElementById('layersRow').style.display = long?'block':'none';
+  updatePreview();
+}
+function selectStyle(id, el){
+  state.style=id;
+  document.querySelectorAll('.stylecard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  applyStyleControls();
+}
+function lockLook(){
+  state.locked=true;
+  document.getElementById('shareChips').innerHTML = specChipsHTML();
+  go('sc-share');
+  toast('Look locked · spec updated in your QR');
+}
+function setConf(btn,lvl){
+  document.querySelectorAll('.conf button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('adjustCard').classList.toggle('show', lvl!=='hi');
+  if(lvl==='hi') toast('Confidence: high — cut as specced');
+}
+function record360(){
+  const btn=document.getElementById('recBtn');
+  btn.disabled=true; btn.style.opacity=.55; btn.textContent='Recording…';
+  const arc=document.getElementById('ringArc'), C=326.7;
+  let p=0;
+  const t=setInterval(()=>{
+    p+=2;
+    arc.style.strokeDashoffset = C*(1-p/100);
+    document.getElementById('pctNum').textContent=p+'%';
+    document.getElementById('pctLabel').textContent = p<34?'Front':p<67?'Sides':'Back';
+    if(p>=100){
+      clearInterval(t);
+      document.getElementById('ringwrap').style.display='none';
+      document.getElementById('scanDone').classList.add('show');
+      btn.style.display='none';
+      document.getElementById('finishBtn').style.display='flex';
+      toast('360° saved to Ravi\'s profile');
+    }
+  },45);
+}
+function finishVisit(){
+  document.getElementById('newEntry').style.display='flex';
+  setRole('client');
+  go('sc-history');
+  toast('Ravi\'s history updated ✓');
+}
+
+/* toast */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ================= init ================= */
+document.getElementById('heroHead').innerHTML =
+  `<svg viewBox="0 0 100 100" width="100%">${sideSVG('L').replace(/<\/?svg[^>]*>/g,'')}</svg>`;
+renderViews(document.getElementById('homeViews'));
+renderViews(document.getElementById('barberViews'));
+document.getElementById('qrHolder').innerHTML = qrSVG();
+document.getElementById('shareChips').innerHTML = specChipsHTML();
+renderGrid();
+updatePreview();
+</script>
+</body>
+</html>
