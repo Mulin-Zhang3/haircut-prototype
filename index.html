@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 通过 HTML Meta 标签实现 302 级别的客户端临时重定向（0秒后跳转） -->
+    <meta http-equiv="refresh" content="0; url=prototype%20modification/index.html">
+    <title>正在跳转...</title>
+    <script>
+        // 使用 JavaScript 进行双重保险跳转
+        // location.replace 不会将当前页面计入历史记录，使用体验与 302 更加一致
+        window.location.replace("prototype%20modification/index.html");
+    </script>
+</head>
+<body>
+    <p>页面正在跳转中，如果未自动跳转，请点击 <a href="prototype%20modification/index.html">这里</a>。</p>
+</body>
+</html>
